@@ -22,10 +22,11 @@ class MailarchiveSpider(scrapy.Spider):
 
     def parse(self, response):
         self.logger.debug(f'Full URL: {response.url}')
+        print(response.url.split('/')[4])
 
         # catch all the urls toward the email messages in the WG mailbox(email list)
         # 在WG信箱(email list)擷取通往所有email訊息頁面的連結
-        yield from self.scrape_urls(response)
+        # yield from self.scrape_urls(response)
         
         # the regular expression that can catch the massages
         # 欲抓取email訊息的正規表達式
@@ -34,10 +35,8 @@ class MailarchiveSpider(scrapy.Spider):
         for a in response.css("a.msg-detail::attr(href)").re(pattern):
             print('catched link:', a)
             # print(response.url.replace(f'browse/{MailarchiveSpider.listname}/', a))
-            yield scrapy.Request(response.url.replace(f'browse/{MailarchiveSpider.listname}/', a))
+            yield scrapy.Request(response.url.replace(f'browse/{MailarchiveSpider.listname}/', a), callback=self.scrape_email)
         
-        
-        yield from self.scrape_email(response)
         
     
 
@@ -50,6 +49,8 @@ class MailarchiveSpider(scrapy.Spider):
 
         for link in all_urls:
             self.logger.debug(f"catched url: {link}")
+
+        return all_urls
 
         
     # 抓取每個email頁面的function

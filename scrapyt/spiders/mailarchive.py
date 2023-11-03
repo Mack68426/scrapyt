@@ -42,7 +42,10 @@ class MailarchiveSpider(scrapy.Spider):
     
 
     def scrape_urls(self, response):
+        # the regular expression that can catch the massages
+        # 欲抓取email訊息的正規表達式
         pattern = 'msg\/%s\/[A-Za-z0-9_-]{,27}\/' % MailarchiveSpider.listname
+
         all_urls = response.css("a.msg-detail::attr(href)").re(pattern)
 
         for link in all_urls:

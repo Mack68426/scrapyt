@@ -1,2 +1,3 @@
-TODO: 改成先在mailbox擷取所有超連結，再一一連過去爬取email內容
+TODO: change the regex catching the meaasges
+TODO: revise the css selector
 TODO: Creat a database

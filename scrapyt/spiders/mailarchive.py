@@ -7,7 +7,7 @@ from scrapy.linkextractors import LinkExtractor
 
 class MailarchiveSpider(scrapy.Spider):
     name = "mailarchive"
-    allowed_domains = ["www.mailarchive.ietf.org"]
+    allowed_domains = ["mailarchive.ietf.org"]
 
     # 選定的郵件列表名稱
     listname = 'sframe'

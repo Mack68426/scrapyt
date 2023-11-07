@@ -16,24 +16,20 @@ class MailarchiveSpider(scrapy.Spider):
         "https://mailarchive.ietf.org/arch/browse/%s" % listname,
     ]
 
-    # rules = [
-    #     Rule(LinkExtractor(allow=('msg\/%s\/[A-Za-z0-9_-]{,27}\/$')), callback='parse_email', follow=True)
-    # ]
-
     def parse(self, response):
-        self.logger.debug(f'Full URL: {response.url}')
-        print(response.url.split('/')[4])
+        # self.logger.debug(f'Full URL: {response.url}')
+        # print(response.url.split('/')[4]) # browse
+
+        ## yield from self.scrape_urls(response)
+        
+        # the regular expression that can catch the massages
+        # 欲抓取email訊息url的正規表達式
+        pattern = 'msg\/%s\/[A-Za-z0-9_-]{,27}\/' % MailarchiveSpider.listname
 
         # catch all the urls toward the email messages in the WG mailbox(email list)
         # 在WG信箱(email list)擷取通往所有email訊息頁面的連結
-        # yield from self.scrape_urls(response)
-        
-        # the regular expression that can catch the massages
-        # 欲抓取email訊息的正規表達式
-        pattern = 'msg\/%s\/[A-Za-z0-9_-]{,27}\/' % MailarchiveSpider.listname
-
         for a in response.css("a.msg-detail::attr(href)").re(pattern):
-            print('catched link:', a)
+            # print('catched link:', a)
             # print(response.url.replace(f'browse/{MailarchiveSpider.listname}/', a))
             yield scrapy.Request(response.url.replace(f'browse/{MailarchiveSpider.listname}/', a), callback=self.scrape_email)
         
@@ -50,7 +46,7 @@ class MailarchiveSpider(scrapy.Spider):
         for link in all_urls:
             self.logger.debug(f"catched url: {link}")
 
-        return all_urls
+            
 
         
     # 抓取每個email頁面的function
@@ -59,7 +55,7 @@ class MailarchiveSpider(scrapy.Spider):
         def extract_with_css(query):
             return response.css(query).getall()
 
-        subjects = extract_with_css("div#msg-body h3")
+        subjects = extract_with_css("div#msg-body h3::text")
         authors  = extract_with_css("span#msg-from::text")
         dates    = extract_with_css("span#msg-date::text")
         contents = extract_with_css(".wordwrap::text")

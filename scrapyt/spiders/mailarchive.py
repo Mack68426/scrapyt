@@ -17,10 +17,10 @@ class MailarchiveSpider(scrapy.Spider):
     ]
 
     def parse(self, response):
-        # self.logger.debug(f'Full URL: {response.url}')
-        # print(response.url.split('/')[4]) # browse
+        #- self.logger.debug(f'Full URL: {response.url}')
+        #- print(response.url.split('/')[4]) # browse ~~
 
-        ## yield from self.scrape_urls(response)
+        # yield from self.scrape_urls(response)
         
         # the regular expression that can catch the massages
         # 欲抓取email訊息url的正規表達式
@@ -34,6 +34,33 @@ class MailarchiveSpider(scrapy.Spider):
             yield scrapy.Request(response.url.replace(f'browse/{MailarchiveSpider.listname}/', a), callback=self.scrape_email)
         
         
+    # 抓取每個email頁面的function
+    def scrape_email(self, response):
+        # 解析工具
+        def extract_with_css(query):
+            return response.css(query).getall()
+
+        subjects = extract_with_css("div#msg-body h3::text")
+        authors  = extract_with_css("span#msg-from::text")
+        dates    = extract_with_css("span#msg-date::text")
+        contents = extract_with_css(".wordwrap::text")
+
+        # print("Subject:", subjects)
+        # print("From   :", authors)
+        # print("Date   :", dates)
+        # print("Content:", contents)
+
+
+        for (title, author, date, msg) in zip(subjects, authors, dates, contents):
+
+            ScrapytItem = {
+                "mail_title"  : title if title else None,
+                "mail_author" : author if author else None,
+                "mail_date"   : date if date else None,
+                "mail_content": msg if msg else None,
+            }
+        
+            yield ScrapytItem
     
 
     def scrape_urls(self, response):
@@ -49,30 +76,3 @@ class MailarchiveSpider(scrapy.Spider):
             
 
         
-    # 抓取每個email頁面的function
-    def scrape_email(self, response):
-        # 解析工具
-        def extract_with_css(query):
-            return response.css(query).getall()
-
-        subjects = extract_with_css("div#msg-body h3::text")
-        authors  = extract_with_css("span#msg-from::text")
-        dates    = extract_with_css("span#msg-date::text")
-        contents = extract_with_css(".wordwrap::text")
-
-        print("Subject:", subjects)
-        print("From   :", authors)
-        print("Date   :", dates)
-        print("Content:", contents)
-
-
-        for (title, author, date, msg) in zip(subjects, authors, dates, contents):
-
-            ScrapytItem = {
-                "mail_title"  : title if title else None,
-                "mail_author" : author if author else None,
-                "mail_date"   : date if date else None,
-                "mail_content": msg if msg else None,
-            }
-        
-            yield ScrapytItem

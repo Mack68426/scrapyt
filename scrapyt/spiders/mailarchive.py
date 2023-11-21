@@ -18,7 +18,7 @@ class MailarchiveSpider(scrapy.Spider):
 
     def parse(self, response):
         #- self.logger.debug(f'Full URL: {response.url}')
-        #- print(response.url.split('/')[4]) # browse ~~
+        #- print(response.url.split('/')[4]) # browse
 
         # yield from self.scrape_urls(response)
         
@@ -63,15 +63,15 @@ class MailarchiveSpider(scrapy.Spider):
             yield ScrapytItem
     
 
-    def scrape_urls(self, response):
-        # the regular expression that can catch the massages
-        # 欲抓取email訊息的正規表達式
-        pattern = 'msg\/%s\/[A-Za-z0-9_-]{,27}\/' % MailarchiveSpider.listname
+    # def scrape_urls(self, response):
+    #     # the regular expression that can catch the massages
+    #     # 欲抓取email訊息的正規表達式
+    #     pattern = 'msg\/%s\/[A-Za-z0-9_-]{,27}\/' % MailarchiveSpider.listname
 
-        all_urls = response.css("a.msg-detail::attr(href)").re(pattern)
+    #     all_urls = response.css("a.msg-detail::attr(href)").re(pattern)
 
-        for link in all_urls:
-            self.logger.debug(f"catched url: {link}")
+    #     for link in all_urls:
+    #         self.logger.debug(f"catched url: {link}")
 
             
 

@@ -1,7 +1,7 @@
+import re
 import scrapy
 from typing import Iterable
 from bs4 import BeautifulSoup
-from scrapy.http import Request
 from scrapy.spiders import Rule
 from scrapy.linkextractors import LinkExtractor
 
@@ -37,30 +37,34 @@ class MailarchiveSpider(scrapy.Spider):
     # 抓取每個email頁面的function
     def scrape_email(self, response):
         # 解析工具
-        def extract_with_css(query):
-            return response.css(query).getall()
+        def get_with_css(query):
+            return response.css(query)
+        
+        
 
-        subjects = extract_with_css("div#msg-body h3::text")
-        authors  = extract_with_css("span#msg-from::text")
-        dates    = extract_with_css("span#msg-date::text")
-        contents = extract_with_css(".wordwrap::text")
+        subjects = get_with_css("div#msg-body h3::text").getall()
+        authors  = get_with_css("span#msg-from::text").getall()
+        eamils   = get_with_css("span#msg-from::text").re(r"<(.*?)>")
+        dates    = get_with_css("span#msg-date::text").getall()
+        contents = get_with_css(".wordwrap::text").getall()
 
         # print("Subject:", subjects)
-        # print("From   :", authors)
+        print("From   :", authors)
         # print("Date   :", dates)
         # print("Content:", contents)
 
 
-        for (title, author, date, msg) in zip(subjects, authors, dates, contents):
+        for (title, author, email, date, msg) in zip(subjects, authors, eamils,dates, contents):
 
             ScrapytItem = {
                 "mail_title"  : title if title else None,
                 "mail_author" : author if author else None,
+                "mail_address": email if email else None,
                 "mail_date"   : date if date else None,
                 "mail_content": msg if msg else None,
             }
         
-            yield ScrapytItem
+            if all(ScrapytItem): yield ScrapytItem
     
 
     # def scrape_urls(self, response):

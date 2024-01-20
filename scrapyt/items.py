@@ -11,7 +11,7 @@ class ScrapytItem(scrapy.Item):
     # name = scrapy.Field()
     mail_title   = scrapy.Field()
     mail_author  = scrapy.Field()
-    mail_address = scrapy.Field() 
+    mail_mail = scrapy.Field() 
     mail_date    = scrapy.Field()
     mail_content = scrapy.Field()
     

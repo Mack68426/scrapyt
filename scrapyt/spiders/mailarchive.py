@@ -1,5 +1,6 @@
 import re
 import scrapy
+from email.utils import parseaddr
 from typing import Iterable
 from bs4 import BeautifulSoup
 from scrapy.spiders import Rule
@@ -38,34 +39,44 @@ class MailarchiveSpider(scrapy.Spider):
     def scrape_email(self, response):
         # 解析工具
         def get_with_css(query):
-            return response.css(query)
+            return response.css(query).getall()
         
         
 
-        subjects = get_with_css("div#msg-body h3::text").getall()
-        authors  = get_with_css("span#msg-from::text").getall()
-        eamils   = get_with_css("span#msg-from::text").re(r"<(.*?)>")
-        dates    = get_with_css("span#msg-date::text").getall()
-        contents = get_with_css(".wordwrap::text").getall()
+        subjects = get_with_css("div#msg-body h3::text")
+        senders  = get_with_css("span#msg-from::text")
+        dates    = get_with_css("span#msg-date::text")
+        contents = get_with_css(".wordwrap::text")
 
+        # filtering author names and emails
+        authors, emails = self._parse_sender(senders)
         # print("Subject:", subjects)
-        print("From   :", authors)
+        # print("From   :", authors)
         # print("Date   :", dates)
         # print("Content:", contents)
 
 
-        for (title, author, email, date, msg) in zip(subjects, authors, eamils,dates, contents):
+        for (title, author, email, date, msg) in zip(subjects, authors, emails, dates, contents):
 
             ScrapytItem = {
                 "mail_title"  : title if title else None,
                 "mail_author" : author if author else None,
-                "mail_address": email if email else None,
+                "mail_mail"   : email if email else None,
                 "mail_date"   : date if date else None,
                 "mail_content": msg if msg else None,
             }
         
             if all(ScrapytItem): yield ScrapytItem
 
-     
+    def _parse_sender(self, senders):
+        names = []
+        emails = []
+        for s in senders: 
+            name, mail = parseaddr(s)
+
+            names.append(name)
+            emails.append(mail)
+        
+        return (names, emails)
 
         
